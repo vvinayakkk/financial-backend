@@ -22,4 +22,5 @@ urlpatterns = [
  #   path('chatbot/', chatbot_view,name='chatbot'),
     path('',include('users.urls')),
     path('', include('finances.urls')), 
+    path('', include('chatbot.urls')), 
 ]

@@ -11,7 +11,7 @@ from service.models import Transaction
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 import matplotlib.pyplot as plt
-from openai import GPT
+#from openai import GPT
 #import openai
 
 from django.http import JsonResponse

@@ -35,11 +35,11 @@ class LoginView(APIView):
 
             token = jwt.encode(payload, 'secret', algorithm='HS256')
 
-            response = JsonResponse({'message': 'Login successful'})
+            response = JsonResponse({'status': True, 'message': 'Login successful'})
             response.set_cookie(key='jwt', value=token, httponly=True)
             return response
 
-        return JsonResponse({'error': 'Invalid username or password'}, status=401)
+        return JsonResponse({'status': False, 'error': 'Invalid username or password'}, status=401)
 
 class UniqueCheckView(APIView):
     def post(self, request):

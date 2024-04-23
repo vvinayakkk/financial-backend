@@ -17,7 +17,7 @@ def chatbot_view(request):
             print("Received query:", query)
             
             # Initialize GPT-3.5 API
-            gpt = GPT(api_key='sk-proj-xiA9AUF26DrDvQN44AjiT3BlbkFJdhg912X3gWGCHuUEeJ7D')
+            gpt = GPT(api_key='')
 
             # Generate response using GPT-3.5 API
             response = gpt.submit_request(query)

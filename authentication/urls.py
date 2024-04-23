@@ -15,11 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
-from .views import chatbot_view
+#from .views import chatbot_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('chatbot/', chatbot_view,name='chatbot'),
+ #   path('chatbot/', chatbot_view,name='chatbot'),
     path('',include('users.urls')),
     path('', include('finances.urls')), 
 ]

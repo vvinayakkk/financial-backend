@@ -64,3 +64,23 @@ def reload_categories(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
     return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+
+@csrf_exempt
+def update_budget(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            category_name = data.get('category')
+            category_type = data.get('type')
+            new_budget = data.get('budget')
+
+            category = Category.objects.get(name=category_name, type=category_type)
+            category.budget = new_budget
+            category.save()
+
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            logger.exception("Error updating budget:")
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)

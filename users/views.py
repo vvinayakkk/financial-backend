@@ -29,14 +29,16 @@ class LoginView(APIView):
         if user and user.check_password(password):
             payload = {
                 'id': user.id,
+                'username': user.username, 
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
                 'iat': datetime.datetime.utcnow()
             }
 
             token = jwt.encode(payload, 'secret', algorithm='HS256')
-
-            response = JsonResponse({'status': True, 'message': 'Login successful'})
-            response.set_cookie(key='jwt', value=token, httponly=True)
+            print(token)
+            response = JsonResponse({'status': True, 'message': 'Login successful','token':token})
+            #response.set_cookie(key='jwt', value=token, httponly=True)
+            #print(response.cookies)
             return response
 
         return JsonResponse({'status': False, 'error': 'Invalid username or password'}, status=401)
@@ -49,4 +51,4 @@ class UniqueCheckView(APIView):
         if User.objects.filter(email=email).exists() or User.objects.filter(contact=contact).exists():
             return JsonResponse({'status': False, 'message': 'Email or contact already exists'})
 
-        return JsonResponse({'status': True, 'message': 'Email and contact are unique'})
+        return JsonResponse({'status': True, 'message': 'Email and contact are unique'})

@@ -49,6 +49,12 @@ def form_handler(request):
         print('Error processing data:', e)
         return JsonResponse({'status': 'error', 'message': 'Internal Server Error'}, status=500)
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+import json
+import jwt
+
 @csrf_exempt
 @require_POST
 def graph_data_sender(request):
@@ -58,15 +64,25 @@ def graph_data_sender(request):
         print(details.get('endDate'))
         authorization_header = request.headers.get('Authorization')
 
-        decoded_token = jwt.decode(authorization_header, 'secret', algorithms=['HS256'])
+        if not authorization_header:
+            return JsonResponse({'status': 'error', 'message': 'Authorization header missing'}, status=400)
 
-        username = decoded_token['username']
+        try:
+            decoded_token = jwt.decode(authorization_header, 'secret', algorithms=['HS256'])
+            username = decoded_token['username']
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({'status': 'error', 'message': 'Expired token'}, status=401)
+        except jwt.InvalidTokenError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid token'}, status=401)
+        except jwt.DecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Failed to decode token'}, status=401)
+        
         print(username)
         print(details)
         print("checkpoint 0")
         
         start_date = details.get('startDate')
-        end_date = details.get('startDate')
+        end_date = details.get('endDate')
         
         print("checkpoint 1")
         
@@ -74,21 +90,21 @@ def graph_data_sender(request):
             end_date__range=[start_date, end_date],
             name=username 
         )
-        #print(transactions)
+        
         serialized_transactions = serializers.serialize('json', transactions)
         parsed_transactions = json.loads(serialized_transactions)
         
-        data_structure= []
+        data_structure = []
         for transaction in parsed_transactions:
             fields = transaction['fields']
             data_structure.append({
                 'type': fields.get('type'),
                 'category': fields.get('category'),
                 'amount': fields.get('amount'),
-                'date':fields.get('end_date')
+                'date': fields.get('end_date')
             })
         print("response: ", data_structure)
-        return JsonResponse({'status':'true','message':'Data Passed','data':data_structure},status = 200)
+        return JsonResponse({'status':'true', 'message':'Data Passed', 'data': data_structure}, status=200)
     except Exception as e:
         print('Error processing data:', e)
         return JsonResponse({'status': 'error', 'message': 'Internal Server Error'}, status=500)

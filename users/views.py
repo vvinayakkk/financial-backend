@@ -51,4 +51,4 @@ class UniqueCheckView(APIView):
         if User.objects.filter(email=email).exists() or User.objects.filter(contact=contact).exists():
             return JsonResponse({'status': False, 'message': 'Email or contact already exists'})
 
-        return JsonResponse({'status': True, 'message': 'Email and contact are unique'})
+        return JsonResponse({'status': True, 'message': 'Email and contact are unique'})

@@ -6,7 +6,7 @@ from .models import Transaction
 
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ['name','type', 'category', 'amount', 'recurring', 'term', 'end_date']
-    list_filter = ['category','type', 'recurring', 'term','end_date']
+    list_filter = ['name','category','type', 'recurring', 'term','end_date']
     search_fields = ['name', 'type','category', 'description']
 
 admin.site.register(Transaction,TransactionAdmin)

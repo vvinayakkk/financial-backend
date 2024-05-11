@@ -67,7 +67,7 @@ def reload_categories(request):
             decoded_token = jwt.decode(authorization_header,'secret',algorithms=['HS256'])
             user_name = decoded_token['username']
             # Retrieve all categories from the database
-            categories = Category.objects.all()
+            categories = Category.objects.filter(username=user_name)
             logger.info(f"Retrieved categories: {categories}")
             # Convert categories to JSON format
             categories_json = [{'name': category.name, 'type': category.type, 'budget': category.budget,} for category in categories]

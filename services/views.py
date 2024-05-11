@@ -99,36 +99,26 @@ import jwt
 @csrf_exempt
 @require_POST
 def graph_data_sender(request):
-    print(request.body)
     try:
-        #print(request.headers)
         details = json.loads(request.body)
-        #print(details.get('endDate'))
         authorization_header = request.headers.get('Authorization')
-        print(authorization_header)
+        
         if not authorization_header:
             return JsonResponse({'status': 'error', 'message': 'Authorization header missing'}, status=400)
 
-        
         decoded_token = jwt.decode(authorization_header, 'secret', algorithms=['HS256'])
         username = decoded_token['username']
-        print(username)
-        '''except jwt.ExpiredSignatureError:
-            return JsonResponse({'status': 'error', 'message': 'Expired token'}, status=401)
-        except jwt.InvalidTokenError:
-            return JsonResponse({'status': 'error', 'message': 'Invalid token'}, status=401)
-        except jwt.DecodeError:
-            return JsonResponse({'status': 'error', 'message': 'Failed to decode token'}, status=401)'''
         
-        print(username)
-        print(details)
-        print("checkpoint 0")
+        start_date_str = details.get('startDate')
+        end_date_str = details.get('endDate')
         
-        start_date = details.get('startDate')
-        end_date = details.get('endDate')
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
         
-        print("checkpoint 1")
-        if details.get('selectedOption') == 'both':
+        selected_option = details.get('selectedOption')
+        
+        # Filter transactions based on username, date range, and optional transaction type
+        if selected_option == 'both':
             transactions = Transaction.objects.filter(
                 end_date__range=[start_date, end_date],
                 name=username 
@@ -137,11 +127,14 @@ def graph_data_sender(request):
             transactions = Transaction.objects.filter(
                 end_date__range=[start_date, end_date],
                 name=username ,
-                type = details.get('selectedOption')
+                type = selected_option
             )
+            
+        # Serialize transactions to JSON format
         serialized_transactions = serializers.serialize('json', transactions)
         parsed_transactions = json.loads(serialized_transactions)
         
+        # Construct response data structure
         data_structure = []
         for transaction in parsed_transactions:
             fields = transaction['fields']
@@ -152,8 +145,9 @@ def graph_data_sender(request):
                 'amount': fields.get('amount'),
                 'date': fields.get('end_date')
             })
-        print("response: ", data_structure)
-        return JsonResponse({'status':'true', 'message':'Data Passed', 'data': data_structure}, status=200)
+        
+        return JsonResponse({'status': 'true', 'message': 'Data Passed', 'data': data_structure}, status=200)
+    
     except Exception as e:
         print('Error processing data:', e)
         return JsonResponse({'status': 'error', 'message': 'Internal Server Error'}, status=500)

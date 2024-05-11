@@ -30,7 +30,7 @@ class LoginView(APIView):
             payload = {
                 'id': user.id,
                 'username': user.username, 
-             
+                
             }
 
             token = jwt.encode(payload, 'secret', algorithm='HS256')

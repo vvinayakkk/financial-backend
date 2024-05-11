@@ -89,6 +89,7 @@ import jwt
 @csrf_exempt
 @require_POST
 def graph_data_sender(request):
+    print(request.body)
     try:
         #print(request.headers)
         details = json.loads(request.body)
@@ -98,15 +99,16 @@ def graph_data_sender(request):
         if not authorization_header:
             return JsonResponse({'status': 'error', 'message': 'Authorization header missing'}, status=400)
 
-        try:
-            decoded_token = jwt.decode(authorization_header, 'secret', algorithms=['HS256'])
-            username = decoded_token['username']
-        except jwt.ExpiredSignatureError:
+        
+        decoded_token = jwt.decode(authorization_header, 'secret', algorithms=['HS256'])
+        username = decoded_token['username']
+        print(username)
+        '''except jwt.ExpiredSignatureError:
             return JsonResponse({'status': 'error', 'message': 'Expired token'}, status=401)
         except jwt.InvalidTokenError:
             return JsonResponse({'status': 'error', 'message': 'Invalid token'}, status=401)
         except jwt.DecodeError:
-            return JsonResponse({'status': 'error', 'message': 'Failed to decode token'}, status=401)
+            return JsonResponse({'status': 'error', 'message': 'Failed to decode token'}, status=401)'''
         
         print(username)
         print(details)
@@ -116,12 +118,17 @@ def graph_data_sender(request):
         end_date = details.get('endDate')
         
         print("checkpoint 1")
-        
-        transactions = Transaction.objects.filter(
-            end_date__range=[start_date, end_date],
-            name=username 
-        )
-        
+        if details.get('selectedOption') == 'both':
+            transactions = Transaction.objects.filter(
+                end_date__range=[start_date, end_date],
+                name=username 
+            )
+        else:
+            transactions = Transaction.objects.filter(
+                end_date__range=[start_date, end_date],
+                name=username ,
+                type = details.get('selectedOption')
+            )
         serialized_transactions = serializers.serialize('json', transactions)
         parsed_transactions = json.loads(serialized_transactions)
         
@@ -131,6 +138,7 @@ def graph_data_sender(request):
             data_structure.append({
                 'type': fields.get('type'),
                 'category': fields.get('category'),
+                'description': fields.get('description'),
                 'amount': fields.get('amount'),
                 'date': fields.get('end_date')
             })

@@ -5,4 +5,8 @@ from django.contrib import admin
 from django.contrib import admin
 from .models import Category
 
-admin.site.register(Category)
+
+class Category_admin(admin.ModelAdmin):
+    list_filter =['username','name','type','budget']
+    list_display = ['username','name','type','budget']
+admin.site.register(Category,Category_admin)

@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from .models import Category
 import json
 from django.views.decorators.csrf import csrf_exempt
+import jwt
 
 logger = logging.getLogger(__name__)
 
@@ -15,9 +16,17 @@ def add_category(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            print(data)
             logger.info(f"Received data: {data}")
+            authorization_header = request.headers.get('Authorization')
+            print("Authorization Header:", authorization_header) 
+            decoded_token = jwt.decode(authorization_header,'secret',algorithms=['HS256'])
+            print("Decoded Token:", decoded_token)
+            username = decoded_token['username']
+            
             # Process data and create a new category
             category = Category.objects.create(
+                username=username,
                 name=data['name'],
                 type=data['type'],
                 budget=data['budget']
@@ -31,13 +40,14 @@ def add_category(request):
     return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
 
 
+
 @csrf_exempt
 def delete_category(request):
     if request.method == 'POST':
-        # Handle POST request to delete category
         data = json.loads(request.body)
-        # Process data and delete the category
-        # Example:
+        authorization_header = request.headers.get('Authorization')
+        decoded_token = jwt.decode(authorization_header,'secret',algorithms=['HS256'])
+        user_name = decoded_token['username']
         try:
             category = Category.objects.get(name=data['name'], type=data['type'])
             category.delete()
@@ -45,13 +55,16 @@ def delete_category(request):
         except Category.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Category not found'}, status=404)
     elif request.method == 'GET':
-        # Handle GET request for some other purpose, maybe fetching category details
-        # Adjust the logic according to your requirements
         return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+
 @csrf_exempt
 def reload_categories(request):
     if request.method == 'GET':
         try:
+            authorization_header = request.headers.get('Authorization')
+            print(authorization_header)
+            decoded_token = jwt.decode(authorization_header,'secret',algorithms=['HS256'])
+            user_name = decoded_token['username']
             # Retrieve all categories from the database
             categories = Category.objects.all()
             logger.info(f"Retrieved categories: {categories}")
@@ -69,6 +82,9 @@ def reload_categories(request):
 def update_budget(request):
     if request.method == 'POST':
         try:
+            authorization_header = request.headers.get('Authorization')
+            decoded_token = jwt.decode(authorization_header,'secret',algorithms=['HS256'])
+            user_name = decoded_token['username']
             data = json.loads(request.body)
             category_name = data.get('category')
             category_type = data.get('type')

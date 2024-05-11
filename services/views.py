@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-# Create your views here.
+from finances.models import Category
 from django.core.exceptions import SuspiciousOperation
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -10,6 +10,10 @@ import jwt
 from django.conf import settings
 from .models import Transaction
 from django.core import serializers
+import smtplib
+from datetime import datetime, timedelta
+from django.db.models import Sum
+from users.models import User
 
 @csrf_exempt
 @require_POST
@@ -17,7 +21,7 @@ def form_handler(request):
     try:
         if not request.body:
             raise SuspiciousOperation('Missing JSON data in the request body')
-        print(request.body)
+        #print(request.body)
         data = json.loads(request.body)
         json_string = data.get('jsonString')
         details = json.loads(json_string)
@@ -42,12 +46,39 @@ def form_handler(request):
             end_date=details.get('endDate')
         )
         transaction.save()
+        
+        category=details.get('category') 
+        print(category)
+        
+        check_offset(username,category)
 
         return JsonResponse({'status': 'success', 'message': 'Data received and processed successfully'},status = 200)
 
     except Exception as e:
         print('Error processing data:', e)
         return JsonResponse({'status': 'error', 'message': 'Internal Server Error'}, status=500)
+    
+def check_offset(username,category_name):
+    print("hi")
+    category = Category.objects.filter(username=username, name=category_name).first()
+    
+    budget = category.budget
+    
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+
+# Calculate the sum of amounts for the specified category and within the past 30 days
+    total_amount = Transaction.objects.filter(category=category_name, end_date__gte=thirty_days_ago).aggregate(Sum('amount'))['amount__sum']
+    print(total_amount)
+    print(budget)
+    if(budget < total_amount):
+        temp = User.objects.filter(username=username)
+        if temp.exists():
+            user = temp.first()
+            email = user.email
+            offset = total_amount - budget
+            send_email(username,email,category_name,offset)
+    else:
+        return
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -59,11 +90,11 @@ import jwt
 @require_POST
 def graph_data_sender(request):
     try:
-        print(request.headers)
+        #print(request.headers)
         details = json.loads(request.body)
-        print(details.get('endDate'))
+        #print(details.get('endDate'))
         authorization_header = request.headers.get('Authorization')
-
+        print(authorization_header)
         if not authorization_header:
             return JsonResponse({'status': 'error', 'message': 'Authorization header missing'}, status=400)
 
@@ -108,3 +139,19 @@ def graph_data_sender(request):
     except Exception as e:
         print('Error processing data:', e)
         return JsonResponse({'status': 'error', 'message': 'Internal Server Error'}, status=500)
+
+    
+def send_email(username, email, category, offset):
+    
+    server = smtplib.SMTP("smtp.office365.com", 587)
+    server.starttls()
+    server.login('jiten.ganwani@hotmail.com', 'Hmd2198%6')
+    
+    subject = 'Alert for overspending'
+    message = f"Dear {username}, \nyou have overspent on {category} by {offset} in the last 30 days. Please remember to save more. \n\n Regards,\nRupies Team"
+    msg = f'Subject: {subject}\n\n{message}'
+
+    server.sendmail('jiten.ganwani@hotmail.com', email, msg)
+    print("Email sent successfully")
+
+    

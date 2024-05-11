@@ -58,27 +58,37 @@ def form_handler(request):
         print('Error processing data:', e)
         return JsonResponse({'status': 'error', 'message': 'Internal Server Error'}, status=500)
     
-def check_offset(username,category_name):
-    print("hi")
+def check_offset(username, category_name):
+    print("Checking offset...")
+    print("Username:", username)
+    print("Category name:", category_name)
+    
     category = Category.objects.filter(username=username, name=category_name).first()
+    print("Category:", category)
+    
+    if category is None:
+        print("No category found for the user.")
+        return
     
     budget = category.budget
+    print("Budget:", budget)
     
     thirty_days_ago = datetime.now() - timedelta(days=30)
 
-# Calculate the sum of amounts for the specified category and within the past 30 days
+    # Calculate the sum of amounts for the specified category and within the past 30 days
     total_amount = Transaction.objects.filter(category=category_name, end_date__gte=thirty_days_ago).aggregate(Sum('amount'))['amount__sum']
-    print(total_amount)
-    print(budget)
-    if(budget < total_amount):
+    print("Total amount spent in the last 30 days:", total_amount)
+    
+    if budget is not None and total_amount is not None and budget < total_amount:
         temp = User.objects.filter(username=username)
         if temp.exists():
             user = temp.first()
             email = user.email
             offset = total_amount - budget
-            send_email(username,email,category_name,offset)
+            send_email(username, email, category_name, offset)
     else:
-        return
+        print("No overspending detected.")
+
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt

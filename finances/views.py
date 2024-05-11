@@ -48,8 +48,9 @@ def delete_category(request):
         authorization_header = request.headers.get('Authorization')
         decoded_token = jwt.decode(authorization_header,'secret',algorithms=['HS256'])
         user_name = decoded_token['username']
+
         try:
-            category = Category.objects.get(name=data['name'], type=data['type'])
+            category = Category.objects.get(name=data['name'], type=data['type'],username=user_name)
             category.delete()
             return JsonResponse({'status': 'success'})
         except Category.DoesNotExist:
@@ -69,7 +70,7 @@ def reload_categories(request):
             categories = Category.objects.all()
             logger.info(f"Retrieved categories: {categories}")
             # Convert categories to JSON format
-            categories_json = [{'name': category.name, 'type': category.type, 'budget': category.budget} for category in categories]
+            categories_json = [{'name': category.name, 'type': category.type, 'budget': category.budget,} for category in categories]
             # Return categories as JSON response
             return JsonResponse(categories_json, safe=False)
         except Exception as e:
@@ -90,7 +91,7 @@ def update_budget(request):
             category_type = data.get('type')
             new_budget = data.get('budget')
 
-            category = Category.objects.get(name=category_name, type=category_type)
+            category = Category.objects.get(name=category_name, type=category_type,username=user_name)
             category.budget = new_budget
             category.save()
 

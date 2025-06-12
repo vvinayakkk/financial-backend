@@ -1,0 +1,19 @@
+New Transaction: {{ transaction.type.title }}
+
+Dear {{ username }},
+
+A new transaction has been recorded in your account:
+
+Type: {{ transaction.type.title }}
+Amount: ₹{{ amount }}
+Category: {{ category }}
+Date: {{ date }}
+{% if transaction.description %}
+Description: {{ transaction.description }}
+{% endif %}
+
+You can view the full details of this transaction in your dashboard.
+
+---
+This is an automated message from your Financial Management System.
+Please do not reply to this email. 

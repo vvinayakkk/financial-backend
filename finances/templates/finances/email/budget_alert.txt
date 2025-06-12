@@ -1,0 +1,19 @@
+Budget Alert: Overspending Detected
+
+Dear {{ username }},
+
+We've noticed that you've exceeded your budget for {{ category }} in the {{ budget_period }}.
+
+You have overspent by: ₹{{ overspent_amount }}
+
+Here are some suggestions to help you get back on track:
+- Review your recent expenses in this category
+- Look for areas where you can reduce spending
+- Consider adjusting your budget if necessary
+- Set up automatic savings to help stay within budget
+
+You can view your detailed budget analysis in your dashboard.
+
+---
+This is an automated message from your Financial Management System.
+Please do not reply to this email. 

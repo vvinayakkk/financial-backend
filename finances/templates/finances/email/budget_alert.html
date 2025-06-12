@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .content {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .amount {
+            font-size: 24px;
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Budget Alert: Overspending Detected</h2>
+        </div>
+        <div class="content">
+            <p>Dear {{ username }},</p>
+            <p>We've noticed that you've exceeded your budget for <strong>{{ category }}</strong> in the {{ budget_period }}.</p>
+            <p>You have overspent by: <span class="amount">₹{{ overspent_amount }}</span></p>
+            <p>Here are some suggestions to help you get back on track:</p>
+            <ul>
+                <li>Review your recent expenses in this category</li>
+                <li>Look for areas where you can reduce spending</li>
+                <li>Consider adjusting your budget if necessary</li>
+                <li>Set up automatic savings to help stay within budget</li>
+            </ul>
+            <p>You can view your detailed budget analysis in your dashboard.</p>
+        </div>
+        <div class="footer">
+            <p>This is an automated message from your Financial Management System.</p>
+            <p>Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html> 
